@@ -26,7 +26,7 @@ public class SQLiteMessageService : IMessageService
         return new SqliteConnection(connectionString);
     }
 
-    public async Task<int> AddMessageAsync(Message<string> message)
+    public async Task<int> AddMessageAsync(BasicMessage<string> message)
     {
         using var connection = CreateConnection();
         try
@@ -41,14 +41,14 @@ public class SQLiteMessageService : IMessageService
         }
     }
 
-    public async Task<ICollection<Message<string>>> GetAllMessagesAsync()
+    public async Task<ICollection<BasicMessage<string>>> GetAllMessagesAsync()
     {
         using var connection = CreateConnection();
         connection.Open();
         
         try
         {
-            return (await connection.QueryAsync<Message<string>>(GetAllMessagesSql)).ToList();
+            return (await connection.QueryAsync<BasicMessage<string>>(GetAllMessagesSql)).ToList();
         }
         finally
         {

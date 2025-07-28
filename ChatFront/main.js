@@ -10,7 +10,7 @@ socket.addEventListener("message", function (event) {
     if(message.messageType == 'identification')
     {
         if(!sessionStorage.getItem('id'))
-            sessionStorage.setItem('id', message.data);
+            sessionStorage.setItem('id', message.providedId);
     }
     else {
         let output = document.getElementById('output');

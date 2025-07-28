@@ -83,7 +83,7 @@ public class TcpServerCore
 
         try
         {
-            var idMessage = Message<Guid>.CreateIdentificationMessage(Guid.NewGuid());
+            var idMessage = MessageFactory.CreateIdentificationMessage();
             await stream.WriteAsync(idMessage.ToBytes(this.jsonSerializerOptions));
 
             while (true)
@@ -100,7 +100,7 @@ public class TcpServerCore
 
                 try
                 {
-                    var message = data[..bytesRead].MessageFromJsonBytes<string>(this.jsonSerializerOptions);
+                    var message = data[..bytesRead].MessageFromJsonBytes<BasicMessage<string>>(this.jsonSerializerOptions);
                     message.TimeUtc = DateTime.UtcNow;
                     var id = await this.messageService.AddMessageAsync(message);
                     message.Id = id;
@@ -109,7 +109,7 @@ public class TcpServerCore
                 catch (Exception e)
                 {
                     await this.SendMessageAsync(client,
-                        Message<string>.CreateErrorMessage(
+                        MessageFactory.CreateErrorMessage(
                             "Failed to read and save message! Make sure it's in correct format"));
                 }
 
@@ -145,7 +145,8 @@ public class TcpServerCore
     /// <param name="client">Tcp client connection.</param>
     /// <param name="message">Message to send.</param>
     /// <typeparam name="TMessageData">Message data type.</typeparam>
-    public async Task SendMessageAsync<TMessageData>(TcpClient client, Message<TMessageData> message)
+    public async Task SendMessageAsync<TMessage>(TcpClient client, TMessage message)
+        where TMessage : Message.Message, new()
     {
         var stream = client.GetStream();
         await stream.WriteAsync(message.ToBytes(this.jsonSerializerOptions));
@@ -155,7 +156,8 @@ public class TcpServerCore
     /// Sends a message to all connected tcp clients. If a message cannot be sent through a connection, a connection is closed and removed.
     /// </summary>
     /// <param name="message">Message with string data to send <see cref="Message{T}"/>.</param>
-    public async Task NotifyAllAsync(Message<string> message)
+    public async Task NotifyAllAsync<TMessage>(TMessage message)
+        where TMessage : Message.Message, new()
     {
         List<Task> tasks = [];
         List<TcpClient> toRemove = new List<TcpClient>();

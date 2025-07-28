@@ -6,30 +6,32 @@ namespace Chat.Message;
 public static class MessageExtensions
 {
     /// <summary>
-    /// Serializes <see cref="Message{T}"/> into JSON and then into sequence of bytes using UTF8 encoding.
+    /// Serializes into JSON and then into sequence of bytes using UTF8 encoding.
     /// </summary>
     /// <param name="message">Message to serialize.</param>
     /// <param name="options">JSON serialization options</param>
-    /// <typeparam name="T">Message data type.</typeparam>
-    /// <returns></returns>
-    public static byte[] ToBytes<T>(this Message<T> message, JsonSerializerOptions? options = null)
+    /// <typeparam name="T">Message.</typeparam>
+    /// <returns>An array of bytes representing a serialized message.</returns>
+    public static byte[] ToBytes<TMessage>(this TMessage message, JsonSerializerOptions? options = null)
+        where TMessage : Message, new()
     {
         var json = JsonSerializer.Serialize(message, options);
         Console.WriteLine(json);
         return Encoding.UTF8.GetBytes(json);
     }
-
+    
     /// <summary>
     /// Retrieves a message from a sequence of bytes using UTF8 encoding and JSON deserialization.
     /// </summary>
     /// <param name="data">Data to deserialize from.</param>
     /// <param name="options">JSON serialization options.</param>
-    /// <typeparam name="T">Message data type.</typeparam>
-    /// <returns><see cref="Message{T}"/> Message with data.</returns>
-    public static Message<T>? MessageFromJsonBytes<T>(this byte[] data, JsonSerializerOptions? options = null)
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <returns>Message of type <see cref="Message"/>. </returns>
+    public static TMessage? MessageFromJsonBytes<TMessage>(this byte[] data, JsonSerializerOptions? options = null)
+        where TMessage : Message, new()
     {
         var json = Encoding.UTF8.GetString(data);
         Console.WriteLine(json);
-        return JsonSerializer.Deserialize<Message<T>>(json, options);
+        return JsonSerializer.Deserialize<TMessage>(json, options);
     }
 }
