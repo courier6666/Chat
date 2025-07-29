@@ -12,9 +12,24 @@ public class SQLiteMessageService : IMessageService
                                             SELECT last_insert_rowid();
                                             """;
     private const string GetAllMessagesSql = """
-                                             SELECT * FROM messages;
+                                             SELECT * FROM messages ORDER BY TimeUtc;
                                              """;
+    
+    private const string GetPagedMessagesFromBeforeSqlFormat = """
+                                                         SELECT * FROM
+                                                                      (SELECT * FROM messages
+                                                                      WHERE TimeUtc < '{0}'
+                                                                      ORDER BY TimeUtc DESC
+                                                                      LIMIT {1})
+                                                                  ORDER BY TimeUtc;
+                                                         """;
+    
     private string connectionString;
+
+    private string GetPagedMessagesBeforeSql(DateTime timeUtc, int size)
+    {
+        return string.Format(GetPagedMessagesFromBeforeSqlFormat, timeUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffff"), size);
+    }
 
     public SQLiteMessageService(string connectionString)
     {
@@ -49,6 +64,21 @@ public class SQLiteMessageService : IMessageService
         try
         {
             return (await connection.QueryAsync<BasicMessage<string>>(GetAllMessagesSql)).ToList();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
+    public async Task<ICollection<BasicMessage<string>>> GetPagedMessagedFromBefore(DateTime before, int size)
+    {
+        using var connection = CreateConnection();
+        connection.Open();
+
+        try
+        {
+            return (await connection.QueryAsync<BasicMessage<string>>(GetPagedMessagesBeforeSql(before, size))).ToList();
         }
         finally
         {

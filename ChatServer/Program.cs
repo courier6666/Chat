@@ -11,9 +11,9 @@ var command = conn.CreateCommand();
 command.CommandText = """
                       CREATE TABLE IF NOT EXISTS messages(
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Text VARCHAR(4096) NOT NULL,
-                        SenderId CHAR(36) NOT NULL
-                      );
+                        Data VARCHAR(4096) NOT NULL,
+                        AuthorId CHAR(36) NOT NULL,
+                        TimeUtc DATETIME NOT NULL);
                       """;
 command.ExecuteNonQuery();
 
@@ -25,5 +25,6 @@ TcpServerCore tcpServerCore = new TcpServerCore(IPAddress.Loopback, 7070, new SQ
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
 });
+
 
 await tcpServerCore.RunAsync();

@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Message", "Message\Message.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseAccess.SQLite", "DatabaseAccess.SQLite\DatabaseAccess.SQLite.csproj", "{FE7D5D80-57CF-45D0-A289-33874E9EED40}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatHttpServer", "ChatHttpServer\ChatHttpServer.csproj", "{131AC152-4F99-46A2-81F8-1C38FD2493FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{FE7D5D80-57CF-45D0-A289-33874E9EED40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE7D5D80-57CF-45D0-A289-33874E9EED40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE7D5D80-57CF-45D0-A289-33874E9EED40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{131AC152-4F99-46A2-81F8-1C38FD2493FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{131AC152-4F99-46A2-81F8-1C38FD2493FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{131AC152-4F99-46A2-81F8-1C38FD2493FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{131AC152-4F99-46A2-81F8-1C38FD2493FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
