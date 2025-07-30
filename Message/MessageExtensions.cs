@@ -10,7 +10,7 @@ public static class MessageExtensions
     /// </summary>
     /// <param name="message">Message to serialize.</param>
     /// <param name="options">JSON serialization options</param>
-    /// <typeparam name="T">Message.</typeparam>
+    /// <typeparam name="TMessage">Type message.</typeparam>
     /// <returns>An array of bytes representing a serialized message.</returns>
     public static byte[] ToBytes<TMessage>(this TMessage message, JsonSerializerOptions? options = null)
         where TMessage : Message, new()
@@ -19,7 +19,7 @@ public static class MessageExtensions
         Console.WriteLine(json);
         return Encoding.UTF8.GetBytes(json);
     }
-    
+
     /// <summary>
     /// Retrieves a message from a sequence of bytes using UTF8 encoding and JSON deserialization.
     /// </summary>

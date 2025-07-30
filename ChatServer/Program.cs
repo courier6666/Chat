@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Chat.ChatServer;
 using Chat.TcpServer.Core;
 using Chat.DatabaseAccess.SQLite;
 using Microsoft.Data.Sqlite;
@@ -17,14 +18,17 @@ command.CommandText = """
                       """;
 command.ExecuteNonQuery();
 
-TcpServerCore tcpServerCore = new TcpServerCore(IPAddress.Loopback, 7070, new SQLiteMessageService("Data Source=Chat.db"), new JsonSerializerOptions()
+var serializationOptions = new JsonSerializerOptions()
 {
     WriteIndented = false,
     AllowTrailingCommas = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-});
+};
+
+TcpServerCore tcpServerCore = new TcpServerCore(IPAddress.Loopback, 7070, new SQLiteMessageService("Data Source=Chat.db"), serializationOptions);
+ChatHttpServer httpServer = new ChatHttpServer("http://localhost:7071/", serializationOptions);
 
 
-await tcpServerCore.RunAsync();
+Task.WaitAll([ httpServer.StartAsync(), tcpServerCore.RunAsync()]);

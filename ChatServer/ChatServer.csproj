@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ChatHttpServer\ChatHttpServer.csproj" />
       <ProjectReference Include="..\DatabaseAccess.SQLite\DatabaseAccess.SQLite.csproj" />
       <ProjectReference Include="..\TcpServer.Core\TcpServer.Core.csproj" />
     </ItemGroup>
@@ -15,6 +16,10 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.0-preview2.25178.5" />
       <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.18" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Endpoints\" />
     </ItemGroup>
 
 </Project>
