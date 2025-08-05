@@ -4,7 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using Chat.ChatServer.Endpoint;
+using Chat.ChatServer.Router;
 using Chat.ChatServer.Endpoint.Attributes;
+using Chat.ChatServer.Extensions;
 
 namespace Chat.ChatServer;
 
@@ -14,13 +16,14 @@ namespace Chat.ChatServer;
 public class ChatHttpServer : IDisposable
 {
     private HttpListener listener;
-    private Dictionary<string, HttpServerEndpoint> endpoints = [];
+    private Router.Router router;
     private JsonSerializerOptions options;
     
     internal JsonSerializerOptions JsonSerializerOptions => options;
     
     public ChatHttpServer(string prefix, JsonSerializerOptions? options = null)
     {
+        this.router = new Router.Router();
         this.listener = new HttpListener();
         this.listener.Prefixes.Add(prefix);
         this.options = options ?? new JsonSerializerOptions();
@@ -28,14 +31,8 @@ public class ChatHttpServer : IDisposable
 
     public void AddEndpoint(HttpServerEndpoint endpoint)
     {
-        var type = endpoint.GetType();
-        var attribute = Attribute.GetCustomAttributes(type, inherit: true).FirstOrDefault(a => a is EndpointRouteAttribute) as EndpointRouteAttribute;
-        
-        if(attribute == null)
-            throw new InvalidOperationException("Endpoint route not defined!");
-        
         endpoint.ChatHttpServer = this;
-        endpoints[attribute.Route] = endpoint;
+        this.router.AddRoute(endpoint);
     }
     
     public void Stop() => this.listener.Stop();
@@ -60,9 +57,7 @@ public class ChatHttpServer : IDisposable
     {
         try
         {
-            var endpoint = 
-                (this.endpoints.FirstOrDefault(i => context.Request.RawUrl.StartsWith(i.Key))).
-                    Value;
+            var endpoint = this.router.GetRoute(context.GetRouteParamsFromHttpContext());
 
             if (endpoint == null)
             {

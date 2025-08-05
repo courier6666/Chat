@@ -13,7 +13,7 @@ public static class JsonOptions
     {
         return new JsonSerializerOptions()
         {
-            WriteIndented = false,
+            WriteIndented = true,
             AllowTrailingCommas = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

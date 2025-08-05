@@ -8,6 +8,7 @@ public static class HttpServerExtensions
 {
     public static void AddEndpoints(this ChatHttpServer server)
     {
-        server.AddEndpoint(new GetAllMessagesEndpoint(new SQLiteMessageService("Data Source=Chat.db")));
+        var messageService = new SQLiteMessageService("Data Source=Chat.db");
+        server.AddEndpoint(new GetAllMessagesEndpoint(messageService));
     }
 }

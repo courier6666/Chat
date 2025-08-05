@@ -8,7 +8,7 @@ using Chat.DatabaseAccess;
 
 namespace ChatServer.Endpoints;
 
-[EndpointRoute(Route = "/messages/all")]
+[EndpointRoute(Route = "/messages")]
 public class GetAllMessagesEndpoint : HttpServerEndpoint
 {
     private readonly IMessageService messageService;
@@ -20,6 +20,24 @@ public class GetAllMessagesEndpoint : HttpServerEndpoint
 
     public override async Task<IResult> Execute(HttpListenerContext context)
     {
-        return Ok(await this.messageService.GetAllMessagesAsync());
+        var query = context.Request.QueryString;
+
+        DateTime? timeBefore = null;
+        try
+        {
+            var timeParam = query.Get("timeBefore");
+            
+            if(timeParam != null)
+                timeBefore = DateTime.Parse(timeParam!);
+        }
+        catch (FormatException e)
+        {
+            return StatusCode(HttpStatusCode.BadRequest, "Failed to parse query parameters!");
+        }
+        
+        if (timeBefore == null)
+            return Ok(await this.messageService.GetAllMessagesAsync());
+
+        return Ok(await this.messageService.GetPagedMessagedFromBeforeAsync(timeBefore.Value, 10));
     }
 }
