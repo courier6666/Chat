@@ -23,12 +23,21 @@ public class GetAllMessagesEndpoint : HttpServerEndpoint
         var query = context.Request.QueryString;
 
         DateTime? timeBefore = null;
+        int countMessages = 10;
+        
+        
         try
         {
             var timeParam = query.Get("timeBefore");
+            var countParam = query.Get("count");
             
             if(timeParam != null)
                 timeBefore = DateTime.Parse(timeParam!);
+            
+            if(countParam != null)
+                countMessages = int.Parse(countParam!);
+            
+            
         }
         catch (FormatException e)
         {
@@ -38,6 +47,6 @@ public class GetAllMessagesEndpoint : HttpServerEndpoint
         if (timeBefore == null)
             return Ok(await this.messageService.GetAllMessagesAsync());
 
-        return Ok(await this.messageService.GetPagedMessagedFromBeforeAsync(timeBefore.Value, 10));
+        return Ok(await this.messageService.GetPagedMessagedFromBeforeAsync(timeBefore.Value, countMessages));
     }
 }

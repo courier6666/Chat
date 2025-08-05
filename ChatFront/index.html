@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script>var exports = {};</script>
     <script src="main.js"></script>
+    <link rel="stylesheet" href="css/main.css">
 </head>
-<body>
-    <div id="output">
 
-    </div>
-    <div>
-        <button onclick="buttonClick()">
-            Send
-        </button>
+<body>
+    <div class="main">
+        <div id="output" class="output">
+        </div>
+        <div class="display-input" style="width: 100%;">
+            <label for="messageInput">Message:</label>
+            <input type="text" id="messageInput" oninput="onInputChange()" />
+            <button onclick="buttonClick()" id="sendButton" disabled>
+                Send
+            </button>
+        </div>
     </div>
 </body>
+
 </html>

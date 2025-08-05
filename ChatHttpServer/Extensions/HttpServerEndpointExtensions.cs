@@ -9,14 +9,17 @@ public static class HttpServerEndpointExtensions
     public static RouteParams GetRouteParamsFromHttpServerEndpoint(this IHttpServerEndpoint endpoint)
     {
         var type = endpoint.GetType();
-        var attribute = Attribute.GetCustomAttributes(type, inherit: true).FirstOrDefault(a => a is EndpointRouteAttribute) as EndpointRouteAttribute;
+        var customAttributes = Attribute.GetCustomAttributes(type, inherit: true);
+        var routeAttribute = customAttributes.FirstOrDefault(a => a is EndpointRouteAttribute) as EndpointRouteAttribute;
+        var httpMethodAttributes = customAttributes.FirstOrDefault(a => a is EndpointHttpMethodAttribute) as EndpointHttpMethodAttribute;
         
-        if (attribute == null)
+        if (routeAttribute == null)
             throw new InvalidOperationException("Endpoint route not defined!");
 
         return new RouteParams()
         {
-            Route = attribute.Route,
+            Route = routeAttribute.Route,
+            Method = httpMethodAttributes?.Method.ToString() ?? HttpMethod.Get.ToString(),
         };
     }
 }

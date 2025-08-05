@@ -2,5 +2,6 @@ namespace Chat.ChatServer.Endpoint.Attributes;
 
 public class EndpointRouteAttribute : Attribute
 {
-    public string Route { get; set; }
+    public required string Route { get; set; }
+
 }

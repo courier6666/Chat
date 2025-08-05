@@ -70,6 +70,11 @@ public class ChatHttpServer : IDisposable
             
             context.Response.ContentLength64 = res.Data.Length;
             
+            context.Response.AddHeader("Access-Control-Allow-Origin", "*");
+            context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
+
+            
             using var stream = context.Response.OutputStream;
             await context.Response.OutputStream.WriteAsync(res.Data, 0, res.Data.Length);
             context.Response.StatusCode = (int)res.StatusCode;

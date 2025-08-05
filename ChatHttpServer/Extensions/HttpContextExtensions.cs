@@ -13,6 +13,7 @@ public static class HttpContextExtensions
         return new RouteParams()
         {
             Route = context.Request.Url.AbsolutePath,
+            Method = context.Request.HttpMethod,
         };
     }
     

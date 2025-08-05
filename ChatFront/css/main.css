@@ -1,0 +1,17 @@
+.main
+{
+    width: 50%;
+    margin: auto;
+}
+
+.display-input {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+.output {
+    width: auto;
+    min-height: 200px;
+}
