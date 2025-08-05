@@ -4,9 +4,11 @@ namespace Chat.DatabaseAccess;
 
 public interface IMessageService
 {
-    public Task<int> AddMessageAsync(BasicMessage<string> message);
+    Task<int> AddMessageAsync(BasicMessage<string> message);
 
-    public Task<ICollection<BasicMessage<string>>> GetAllMessagesAsync();
+    Task<ICollection<BasicMessage<string>>> GetAllMessagesAsync();
 
-    public Task<ICollection<BasicMessage<string>>> GetPagedMessagedFromBefore(DateTime before, int size);
+    Task<ICollection<BasicMessage<string>>> GetPagedMessagedFromBeforeAsync(DateTime before, int size);
+    
+    Task<ICollection<BasicMessage<string>>> GetPagedMostRecentMessagesAsync(int count);
 }

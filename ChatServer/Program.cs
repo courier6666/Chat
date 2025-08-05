@@ -4,6 +4,8 @@ using System.Text.Json.Serialization;
 using Chat.ChatServer;
 using Chat.TcpServer.Core;
 using Chat.DatabaseAccess.SQLite;
+using ChatServer;
+using ChatServer.Extensions;
 using Microsoft.Data.Sqlite;
 
 using var conn = new SqliteConnection("Data Source=Chat.db");
@@ -18,17 +20,10 @@ command.CommandText = """
                       """;
 command.ExecuteNonQuery();
 
-var serializationOptions = new JsonSerializerOptions()
-{
-    WriteIndented = false,
-    AllowTrailingCommas = true,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-};
+DapperExtensions.DapperStartup();
 
-TcpServerCore tcpServerCore = new TcpServerCore(IPAddress.Loopback, 7070, new SQLiteMessageService("Data Source=Chat.db"), serializationOptions);
-ChatHttpServer httpServer = new ChatHttpServer("http://localhost:7071/", serializationOptions);
-
+TcpServerCore tcpServerCore = new TcpServerCore(IPAddress.Loopback, 7070, new SQLiteMessageService("Data Source=Chat.db"), JsonOptions.Instance);
+ChatHttpServer httpServer = new ChatHttpServer("http://localhost:7071/", JsonOptions.Instance);
+httpServer.AddEndpoints();
 
 Task.WaitAll([ httpServer.StartAsync(), tcpServerCore.RunAsync()]);

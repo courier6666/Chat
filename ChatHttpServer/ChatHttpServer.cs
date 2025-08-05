@@ -3,10 +3,10 @@ using System.Text.Json;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using Chat.ChatServer.Endpoint;
+using Chat.ChatServer.Endpoint.Attributes;
 
 namespace Chat.ChatServer;
-
-public delegate Task<T> EndpointDelegate<T>(HttpListenerContext context);
 
 /// <summary>
 /// Http server that sends json-only files.
@@ -14,8 +14,10 @@ public delegate Task<T> EndpointDelegate<T>(HttpListenerContext context);
 public class ChatHttpServer : IDisposable
 {
     private HttpListener listener;
-    private Dictionary<string, EndpointDelegate<object>> endpoints = [];
+    private Dictionary<string, HttpServerEndpoint> endpoints = [];
     private JsonSerializerOptions options;
+    
+    internal JsonSerializerOptions JsonSerializerOptions => options;
     
     public ChatHttpServer(string prefix, JsonSerializerOptions? options = null)
     {
@@ -24,9 +26,16 @@ public class ChatHttpServer : IDisposable
         this.options = options ?? new JsonSerializerOptions();
     }
 
-    public void AddEndpoint<TReturnType>(string route, EndpointDelegate<TReturnType> endpoint)
+    public void AddEndpoint(HttpServerEndpoint endpoint)
     {
-        endpoints[route] = async (context) => (object)(await endpoint(context))!;
+        var type = endpoint.GetType();
+        var attribute = Attribute.GetCustomAttributes(type, inherit: true).FirstOrDefault(a => a is EndpointRouteAttribute) as EndpointRouteAttribute;
+        
+        if(attribute == null)
+            throw new InvalidOperationException("Endpoint route not defined!");
+        
+        endpoint.ChatHttpServer = this;
+        endpoints[attribute.Route] = endpoint;
     }
     
     public void Stop() => this.listener.Stop();
@@ -62,15 +71,14 @@ public class ChatHttpServer : IDisposable
                 return;
             }
             
-            var res = await endpoint(context);
-            var json = JsonSerializer.Serialize(res, this.options);
-            var encoded = Encoding.UTF8.GetBytes(json);
-            context.Response.ContentLength64 = encoded.Length;
+            var res = await endpoint.Execute(context);
+            
+            context.Response.ContentLength64 = res.Data.Length;
             
             using var stream = context.Response.OutputStream;
-            context.Response.OutputStream.Write(encoded, 0, encoded.Length);
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = "application/json";
+            await context.Response.OutputStream.WriteAsync(res.Data, 0, res.Data.Length);
+            context.Response.StatusCode = (int)res.StatusCode;
+            context.Response.ContentType = res.ContentType;
             
             context.Response.Close();
         }

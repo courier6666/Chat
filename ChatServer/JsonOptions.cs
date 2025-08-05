@@ -3,9 +3,13 @@ using System.Text.Json.Serialization;
 
 namespace ChatServer;
 
-public static class JsonOptionsFactory
+public static class JsonOptions
 {
-    public static JsonSerializerOptions GetJsonOptions()
+    private static JsonSerializerOptions jsonSerializerOptions;
+    
+    public static JsonSerializerOptions Instance => jsonSerializerOptions ??= GetJsonOptions();
+    
+    private static JsonSerializerOptions GetJsonOptions()
     {
         return new JsonSerializerOptions()
         {
