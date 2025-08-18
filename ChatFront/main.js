@@ -25,39 +25,38 @@ function displayMessagesToOutput(messages)
     }
 }
 
-
 let lastMessageTime = new Date();
 
 let messageListenerFunction = function (event) {
     let message = JSON.parse(event.data);
     console.log(message);
-    if(message.messageType == 'identification')
-    {
-        if(!sessionStorage.getItem('id'))
-            sessionStorage.setItem('id', message.providedId);
+    if(message.messageType != 'identification')
+        return;
 
-        loadMessagesBeforeDateTime(20).then(val => displayMessagesToOutput(val));
+    if(!sessionStorage.getItem('id'))
+        sessionStorage.setItem('id', message.providedId);
 
-        messageListenerFunction = function (event) {
-            let message = JSON.parse(event.data);
-            let output = document.getElementById('output');
+    loadMessagesBeforeDateTime(20).then(val => displayMessagesToOutput(val));
 
-            let isScrolledToBotttom = output.scrollTop == output.scrollHeight;
-
-            let mes = createMessageHtml(message);
-            output.appendChild(mes);
-
-            if(message.authorId == sessionStorage.getItem('id') || isScrolledToBotttom)
-            {
-                output.scrollTo({
-                    top: output.scrollHeight,
-                    behavior: 'instant'
-                });
-            }
-
-        };
-    }
+    messageListenerFunction = basicMessageListener;
+    
 };
+
+function basicMessageListener(event)
+{
+    let message = JSON.parse(event.data);
+    let output = document.getElementById('output');
+    let isScrolledToBotttom = output.scrollTop == output.scrollHeight - output.clientHeight;
+    let mes = createMessageHtml(message);
+    output.appendChild(mes);
+    if(message.authorId == sessionStorage.getItem('id') || isScrolledToBotttom)
+    {
+        output.scrollTo({
+            top: output.scrollHeight,
+            behavior: 'instant'
+        });
+    }
+}
 
 socket.addEventListener("message", function(event){
     messageListenerFunction(event);
@@ -66,6 +65,7 @@ socket.addEventListener("message", function(event){
 function createMessageHtml(message) {
     console.log(message);
     let messageWrapperDiv = document.createElement('div');
+    messageWrapperDiv.className = 'message-wrapper';
     let messageDiv = document.createElement('div');
 
     let username = document.createElement('p');
@@ -179,23 +179,30 @@ function createLoadingGifElement(){
 function onChatScroll(event){
     let output = document.getElementById('output');
 
+    console.log(output.scrollHeight + ' ' + output.scrollTop);
+
     if(!output)
     {
         throw new Error("Element with id #output not found!");
     }
 
-    let child = output.childNodes[0];
-    if(output.scrollTop == 0)
-    {
-        console.log(output);
-        let loadingGif = createLoadingGifElement();
-        output.prepend(loadingGif);
+    if(output.scrollTop > 0)
+        return;
 
-        loadMessagesBeforeDateTime(20).then(val =>
-        {
-            loadingGif.remove();
-            displayMessagesToOutput(val);
-            if(child) child.scrollIntoView();
-        });
-    }
+    let child = output.childNodes[0];
+
+    console.log(output);
+    let loadingGif = createLoadingGifElement();
+    output.prepend(loadingGif);
+    loadMessagesBeforeDateTime(20).then(val =>
+    {
+        loadingGif.remove();
+        displayMessagesToOutput(val);
+        if(child) child.scrollIntoView();
+    });
+    
+}
+
+for (let i = 0;i<10; ++i) {
+
 }
