@@ -6,22 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script>var exports = {};</script>
-    <script src="main.js"></script>
+    
     <link rel="stylesheet" href="css/main.css">
 </head>
 
 <body>
     <div class="main">
-        <div id="output" class="output">
+        <div>
+            <h2>Shit chat</h2>
+        </div>
+        <div id="output" class="output" onscroll="onChatScroll()">
         </div>
         <div class="display-input" style="width: 100%;">
-            <label for="messageInput">Message:</label>
-            <input type="text" id="messageInput" oninput="onInputChange()" />
+            <input class="message-input" type="text" id="messageInput" oninput="onInputChange()" onkeyup="buttonEnterPressedUp(event)"/>
             <button onclick="buttonClick()" id="sendButton" disabled>
                 Send
             </button>
         </div>
     </div>
 </body>
-
 </html>
+
+<script src="main.js"></script>

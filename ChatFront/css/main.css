@@ -1,6 +1,11 @@
+body
+{
+  background-color:beige;
+}
+
 .main
 {
-    width: 50%;
+    width: 70%;
     margin: auto;
 }
 
@@ -13,5 +18,55 @@
 
 .output {
     width: auto;
-    min-height: 200px;
+    border-radius: 10px;
+    background-color: burlywood;
+    min-height: 600px;
+    max-height: 800px;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+  padding: 10px;
+  margin: 5px;
+  background-color:#ffe4c4;
+  max-width: 40%;
+  width: fit-content;
+}
+
+.my-message {
+  float: right;
+  border-radius: 20px 20px 0 20px;
+}
+
+.other-message {
+  float: left;
+  border-radius: 20px 20px 20px 0;
+}
+
+.other-message > .username {
+  color: midnightblue;
+}
+
+.my-message > .username {
+  color: darkgreen;
+}
+
+.message .data {
+  color: black;
+  word-wrap: break-word;
+}
+
+.message-input {
+  width: 50%;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: larger;
+  field-sizing: content;
+}
+
+.loading-gif {
+  height: 100px;
+  margin: auto;
 }
