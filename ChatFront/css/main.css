@@ -17,14 +17,14 @@ body
 }
 
 .output {
-    width: auto;
-    border-radius: 10px;
-    background-color: burlywood;
-    min-height: 600px;
-    max-height: 800px;
-    overflow: scroll;
-    display: flex;
-    flex-direction: column;
+  width: auto;
+  border-radius: 10px;
+  background-color: burlywood;
+  min-height: 600px;
+  max-height: 800px;
+  overflow: scroll;
+  display: flex;
+  flex-direction: column;
 }
 
 .message {

@@ -9,8 +9,8 @@ async function loadMessagesBeforeDateTime(count)
     let res = await fetch(`http://localhost:7071/messages?timeBefore=${lastMessageTime.toISOString()}&count=${count}`)
         .then(response => response.json());
     
-
-    lastMessageTime = new Date(res[0].timeUtc);
+    if(res.length > 0)
+        lastMessageTime = new Date(res[0].timeUtc);
 
     return res;
 }
