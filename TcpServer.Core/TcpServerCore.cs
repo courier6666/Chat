@@ -4,51 +4,47 @@ using System.Text;
 using Chat.Message;
 using System.Text.Json;
 using Chat.DatabaseAccess;
+using TcpServer.Core.Interfaces;
+using TcpServer.Core;
 
 namespace Chat.TcpServer.Core;
 
 /// <summary>
 /// Basic tcp server using tcp client and listener. Used for a chat.
 /// </summary>
-public class TcpServerCore
+internal class TcpServerCore : ITcpServer
 {
     /// <summary>
     /// Current tcp connections.
     /// </summary>
-    private List<TcpClient> connections = new();
-    private IPAddress ip;
+    private ConnectionList connections = new();
+
+    public IPAddress Ip { get; internal set; } = default!;
+
+    public int Port { get; internal set; }
+
+
     private JsonSerializerOptions jsonSerializerOptions;
+
     /// <summary>
     /// Database message service.
     /// </summary>
     private IMessageService messageService;
-    private int port;
+
     
     /// <summary>
     /// Sync locker used to allow only one thread to notify users, see <see cref="NotifyAllAsync"/>.
     /// </summary>
-    private object locker = new object();
+    private readonly object locker = new object();
     /// <summary>
     /// Sync locker used for counting current running <see cref="HandleTcpClient"/> methods.
     /// </summary>
-    private object proccessLocker = new();
+    private readonly object proccessLocker = new();
     private int clientProccessCount = 0;
-
-    public TcpServerCore(IPAddress ip, int port, IMessageService messageService,
-        JsonSerializerOptions jsonSerializerOptions = null!)
-    {
-        ArgumentNullException.ThrowIfNull(ip);
-        ArgumentNullException.ThrowIfNull(messageService);
-
-        this.ip = ip;
-        this.port = port;
-        this.jsonSerializerOptions = jsonSerializerOptions;
-        this.messageService = messageService;
-    }
 
     public async Task RunAsync()
     {
-        using TcpListener server = new TcpListener(this.ip, port);
+        using TcpListener server = new TcpListener(this.Ip, this.Port);
         server.Start();
         ClientCountDisplay();
         while (true)

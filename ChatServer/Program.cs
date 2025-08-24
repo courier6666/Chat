@@ -17,6 +17,7 @@ command.CommandText = """
                         Data VARCHAR(4096) NOT NULL,
                         AuthorId CHAR(36) NOT NULL,
                         TimeUtc DATETIME NOT NULL);
+
                       """;
 command.ExecuteNonQuery();
 
