@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TcpServer.Core.Pipeline
+namespace TcpServer.Core.Collections
 {
-    internal class PipelineExtensions
+    internal class PipelineTypeObjectContainer
     {
     }
 }

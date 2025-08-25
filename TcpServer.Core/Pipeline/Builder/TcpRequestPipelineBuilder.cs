@@ -4,14 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TcpServer.Core.Collections;
 using TcpServer.Core.Pipeline.Interfaces;
 
 namespace TcpServer.Core.Pipeline.Builder
 {
     internal class TcpRequestPipelineBuilder : ITcpRequestPipelineBuilder
     {
-        private List<TcpPipeComponent> components = new List<TcpPipeComponent>();
-        private ConnectionList connections;
+        private List<TcpPipeComponent> components = new();
+
+        private ConnectionList connections = null!;
+
+        private TypeObjectContainer globalServices = null!;
+
         private TcpRequestPipelineBuilder()
         {
             
@@ -22,7 +27,7 @@ namespace TcpServer.Core.Pipeline.Builder
             return new TcpRequestPipelineBuilder();
         }
 
-        public TcpRequestPipelineBuilder AddComponent<T>(T component)
+        public ITcpRequestPipelineBuilder AddComponent<T>(T component)
             where T : class
         {
             if (component == null)
@@ -46,10 +51,22 @@ namespace TcpServer.Core.Pipeline.Builder
             return this;
         }
 
+        internal TcpRequestPipelineBuilder SetGlobalServicesCollection(TypeObjectContainer typeObjectContainer)
+        {
+            if (typeObjectContainer == null)
+            {
+                throw new ArgumentNullException(nameof(typeObjectContainer), "Global services collection cannot be null.");
+            }
+
+
+            return this;
+        }
+
         public void Reset()
         {
             this.components.Clear();
             this.connections = null!;
+            this.globalServices = null!;
         }
 
         internal TcpRequestPipeline Build()
@@ -58,12 +75,18 @@ namespace TcpServer.Core.Pipeline.Builder
             {
                 throw new InvalidOperationException("Connections list must be set before building the pipeline.");
             }
+
             if (this.components.Count == 0)
             {
                 throw new InvalidOperationException("At least one component must be added to the pipeline.");
             }
 
-            var pipeline = TcpRequestPipeline.Create(this.components, this.connections);
+            if (this.globalServices == null)
+            {
+                throw new InvalidOperationException("Global services collection must be set before building the pipeline.");
+            }
+
+            var pipeline = TcpRequestPipeline.Create(this.components, this.connections, this.globalServices);
             pipeline.ConstructPipeline();
             return pipeline;
         }

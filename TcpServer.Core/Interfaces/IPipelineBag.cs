@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TcpServer.Core.Pipeline.Interfaces
+namespace TcpServer.Core.Interfaces
 {
     internal interface IPipelineBag : IWritablePipelineBag
     {

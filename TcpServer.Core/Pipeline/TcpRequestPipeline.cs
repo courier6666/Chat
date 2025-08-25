@@ -2,27 +2,30 @@ using System.Net.Sockets;
 using System.Reflection;
 using Chat.TcpServer.Core.Pipeline.Delegates;
 using TcpServer.Core;
+using TcpServer.Core.Collections;
+using TcpServer.Core.Interfaces;
 using TcpServer.Core.Pipeline;
-using TcpServer.Core.Pipeline.Interfaces;
 
 namespace Chat.TcpServer.Core.Pipeline;
 
 internal class TcpRequestPipeline
 {
-    private List<TcpPipeComponent> pipelineComponents;
-    private ConnectionList connections;
-    private IPipelineBag pipelineBag = new PipelineBag();
+    private readonly List<TcpPipeComponent> pipelineComponents;
+    private readonly ConnectionList connections;
+    private readonly TypeObjectContainer globalServices;
+    private readonly IPipelineBag pipelineBag = new PipelineTypeObjectContainer();
     private TcpComponentDelegate? head = null!;
 
-    private TcpRequestPipeline(IEnumerable<TcpPipeComponent> components, ConnectionList connections)
+    private TcpRequestPipeline(IEnumerable<TcpPipeComponent> components, ConnectionList connections, TypeObjectContainer globalServices)
     {
         this.pipelineComponents = components.ToList();
         this.connections = connections;
+        this.globalServices = globalServices;
     }
 
-    public static TcpRequestPipeline Create(IEnumerable<TcpPipeComponent> components, ConnectionList connections)
+    public static TcpRequestPipeline Create(IEnumerable<TcpPipeComponent> components, ConnectionList connections, TypeObjectContainer globalServices)
     {
-        return new TcpRequestPipeline(components, connections);
+        return new TcpRequestPipeline(components, connections, globalServices);
     }
 
     public bool IsConstructed => head != null;
@@ -47,7 +50,7 @@ internal class TcpRequestPipeline
         {
             var methodParams = currentComponent.Method.
                 GetParameters().
-                Select(p => SelectParameterValue(client, nextComponent, this.pipelineBag, this.connections, p));
+                Select(p => ResolveParameterValue(client, nextComponent, this.pipelineBag, this.connections, this.globalServices, p));
 
             var methodResult = currentComponent.Method.Invoke(currentComponent.Component, methodParams.ToArray());
             
@@ -58,11 +61,12 @@ internal class TcpRequestPipeline
         };
     }
 
-    private static object SelectParameterValue(
+    private static object ResolveParameterValue(
         TcpClient client,
         TcpComponentDelegate? nextComponent,
         IPipelineBag pipelineBag,
         ConnectionList connections,
+        TypeObjectContainer globalServices,
         ParameterInfo parameter)
     {
         var tcpClientType = typeof(TcpClient);
@@ -103,6 +107,11 @@ internal class TcpRequestPipeline
             return connections;
         }
 
+        var foundServiceOrConfig = globalServices.Get(parameterType);
+        if (foundServiceOrConfig != null)
+        {
+            return foundServiceOrConfig;
+        }
 
         var foundObject = pipelineBag.Get(parameterType);
 
@@ -110,11 +119,8 @@ internal class TcpRequestPipeline
         {
             return foundObject;
         }
-        else
-        {
-            throw new InvalidOperationException(
-                $"Parameter of type {parameterType.Name} is not found in the pipeline bag.");
-        }
+
+        throw new InvalidOperationException($"Cannot resolve parameter of type {parameterType.FullName} in pipeline component method {parameter.Member.Name}.");
     }
 
     public Task ExecuteAsync(TcpClient client)

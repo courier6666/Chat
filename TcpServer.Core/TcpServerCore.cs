@@ -7,6 +7,7 @@ using Chat.DatabaseAccess;
 using TcpServer.Core.Interfaces;
 using TcpServer.Core;
 using Chat.TcpServer.Core.Pipeline;
+using TcpServer.Core.Collections;
 
 namespace Chat.TcpServer.Core;
 
@@ -20,7 +21,11 @@ internal class TcpServerCore : ITcpServer
     /// </summary>
     private readonly ConnectionList connections = new();
 
-    public ConnectionList Connections => this.connections;
+    internal ConnectionList Connections => this.connections;
+
+    private readonly TypeObjectContainer globalServices = new();
+
+    internal TypeObjectContainer GlobalServices => this.globalServices;
 
     public Func<TcpRequestPipeline> TcpRequestPipelineFactory { get; internal set; } = default!;
 
@@ -46,6 +51,17 @@ internal class TcpServerCore : ITcpServer
     /// </summary>
     private readonly object proccessLocker = new();
     private int clientProccessCount = 0;
+
+    public void AddGlobalServiceOrConfig<T>(T obj)
+        where T : class
+    {
+        if (obj == null)
+        {
+            throw new ArgumentNullException(nameof(obj), "Global service or config cannot be null.");
+        }
+
+        this.globalServices.Set(obj);
+    }
 
     public async Task RunAsync()
     {

@@ -34,6 +34,19 @@ namespace TcpServer.Core.Builder
             return this;
         }
 
+        public TcpServerBuilder AddGlobalServiceOrConfig<T>(T obj)
+            where T : class
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException(nameof(obj), "Global service or config cannot be null.");
+            }
+
+            this.tcpServerCore.AddGlobalServiceOrConfig(obj);
+            return this;
+        }
+
+
         public TcpServerBuilder Pipeline(Action<ITcpRequestPipelineBuilder> build)
         {
             if (build == null)
@@ -44,7 +57,9 @@ namespace TcpServer.Core.Builder
             this.tcpServerCore.TcpRequestPipelineFactory = () =>
             {
                 var pipelineBuilder = TcpRequestPipelineBuilder.Create();
-                pipelineBuilder.SetConnectionsList(this.tcpServerCore.Connections);
+                pipelineBuilder.SetConnectionsList(this.tcpServerCore.Connections).
+                    SetGlobalServicesCollection(this.tcpServerCore.GlobalServices);
+
                 build(pipelineBuilder);
                 return pipelineBuilder.Build();
             };
@@ -55,10 +70,21 @@ namespace TcpServer.Core.Builder
         public void Reset()
         {
             this.tcpServerCore = new TcpServerCore();
+            this.tcpServerCore.TcpRequestPipelineFactory = null!;
         }
 
         public ITcpServer Build()
         {
+            if(this.tcpServerCore.TcpRequestPipelineFactory == null)
+            {
+                throw new InvalidOperationException("Pipeline is not configured. Please configure the pipeline before building the server.");
+            }
+
+            if (this.tcpServerCore.Port == 0)
+            {
+                throw new InvalidOperationException("Port is not configured. Please configure the port before building the server.");
+            }
+
             var result = this.tcpServerCore;
             this.Reset();
             return result;
