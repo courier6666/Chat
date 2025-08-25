@@ -6,6 +6,7 @@ using System.Text.Json;
 using Chat.DatabaseAccess;
 using TcpServer.Core.Interfaces;
 using TcpServer.Core;
+using Chat.TcpServer.Core.Pipeline;
 
 namespace Chat.TcpServer.Core;
 
@@ -17,7 +18,11 @@ internal class TcpServerCore : ITcpServer
     /// <summary>
     /// Current tcp connections.
     /// </summary>
-    private ConnectionList connections = new();
+    private readonly ConnectionList connections = new();
+
+    public ConnectionList Connections => this.connections;
+
+    public Func<TcpRequestPipeline> TcpRequestPipelineFactory { get; internal set; } = default!;
 
     public IPAddress Ip { get; internal set; } = default!;
 
@@ -53,7 +58,7 @@ internal class TcpServerCore : ITcpServer
             Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
             lock (locker)
             {
-                this.connections.Add(client);
+                this.Connections.Add(client);
             }
 
             Task.Run(async () => { await HandleTcpClient(client); });
@@ -122,7 +127,7 @@ internal class TcpServerCore : ITcpServer
             lock (locker)
             {
                 client.Dispose();
-                this.connections.Remove(client);
+                this.Connections.Remove(client);
             }
         }
 
@@ -160,8 +165,8 @@ internal class TcpServerCore : ITcpServer
         lock (locker)
         {
             Console.WriteLine($"Notifying start---");
-            Console.WriteLine("Connections count - " + connections.Count + ".");
-            foreach (var connection in this.connections)
+            Console.WriteLine("Connections count - " + this.Connections.Count + ".");
+            foreach (var connection in this.Connections)
             {
                 Console.WriteLine(connection.Connected);
                 Console.WriteLine(connection.Client.RemoteEndPoint);
@@ -187,7 +192,7 @@ internal class TcpServerCore : ITcpServer
             foreach (var connection in toRemove)
             {
                 connection.Dispose();
-                connections.Remove(connection);
+                Connections.Remove(connection);
             }
         }
     }

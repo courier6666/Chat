@@ -17,7 +17,7 @@ internal class TcpRequestPipeline
     private TcpRequestPipeline(IEnumerable<TcpPipeComponent> components, ConnectionList connections)
     {
         this.pipelineComponents = components.ToList();
-        this.connections = connections ?? throw new ArgumentNullException(nameof(connections));
+        this.connections = connections;
     }
 
     public static TcpRequestPipeline Create(IEnumerable<TcpPipeComponent> components, ConnectionList connections)
