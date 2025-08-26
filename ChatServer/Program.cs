@@ -7,6 +7,7 @@ using Chat.DatabaseAccess.SQLite;
 using ChatServer;
 using ChatServer.Extensions;
 using Microsoft.Data.Sqlite;
+using TcpServer.Core.Builder;
 
 using var conn = new SqliteConnection("Data Source=Chat.db");
 conn.Open();
@@ -22,6 +23,16 @@ command.CommandText = """
 command.ExecuteNonQuery();
 
 DapperExtensions.DapperStartup();
+
+var builder = TcpServerBuilder.Create();
+builder.Port(7070)
+    .IpAddress(IPAddress.Loopback)
+    .Pipeline(pipeline =>
+    {
+
+    });
+
+
 
 TcpServerCore tcpServerCore = new TcpServerCore(IPAddress.Loopback, 7070, new SQLiteMessageService("Data Source=Chat.db"), JsonOptions.Instance);
 ChatHttpServer httpServer = new ChatHttpServer("http://localhost:7071/", JsonOptions.Instance);

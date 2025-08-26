@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,34 @@ namespace TcpServer.Core.Pipeline
     {
         public static bool IsMethodCorrectForPipeComponent(this MethodInfo methodInfo)
         {
-            throw new NotImplementedException("This method should be implemented to check if the method is suitable for a pipe component.");
+            if (methodInfo.Name != "Handle" && methodInfo.Name != "HandleAsync")
+            {
+                return false;
+            }
+
+            if (!methodInfo.IsPublic)
+            {
+                return false;
+            }
+
+            if (methodInfo.Name == "HandleAsync" && methodInfo.ReturnType != typeof(Task))
+            {
+                return false;
+            }
+
+            if (methodInfo.Name == "Handle" && methodInfo.ReturnType != typeof(void))
+            {
+                return false;
+            }
+
+            var parameters = methodInfo.GetParameters();
+
+            if (!parameters.Any() || parameters[0].ParameterType != typeof(TcpClient))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public static TcpPipeComponent GetComponentFromClass<T>(this T obj)
