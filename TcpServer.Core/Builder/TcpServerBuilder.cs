@@ -5,6 +5,8 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using TcpServer.Core.Collections;
+using TcpServer.Core.Collections.Interfaces;
 using TcpServer.Core.Interfaces;
 using TcpServer.Core.Pipeline.Builder;
 using TcpServer.Core.Pipeline.Interfaces;
@@ -34,15 +36,15 @@ namespace TcpServer.Core.Builder
             return this;
         }
 
-        public TcpServerBuilder AddGlobalServiceOrConfig<T>(T obj)
-            where T : class
+        public TcpServerBuilder AddGlobalServiceOrConfig<T, TImplementation>(TImplementation obj)
+            where TImplementation : class, T
         {
             if (obj == null)
             {
                 throw new ArgumentNullException(nameof(obj), "Global service or config cannot be null.");
             }
 
-            this.tcpServerCore.AddGlobalServiceOrConfig(obj);
+            this.tcpServerCore.AddGlobalServiceOrConfig<T, TImplementation>(obj);
             return this;
         }
 
@@ -67,6 +69,17 @@ namespace TcpServer.Core.Builder
             return this;
         }
 
+        public TcpServerBuilder OnClientConnectedMessageSend(Func<IReadOnlyServices, byte[]> messageFactory)
+        {
+            if (messageFactory == null)
+            {
+                throw new ArgumentNullException(nameof(messageFactory), "Message factory cannot be null.");
+            }
+
+            this.tcpServerCore.OnClientConnectedMessageSend = messageFactory;
+            return this;
+        }
+
         public void Reset()
         {
             this.tcpServerCore = new TcpServerCore();
@@ -75,7 +88,7 @@ namespace TcpServer.Core.Builder
 
         public ITcpServer Build()
         {
-            if(this.tcpServerCore.TcpRequestPipelineFactory == null)
+            if (this.tcpServerCore.TcpRequestPipelineFactory == null)
             {
                 throw new InvalidOperationException("Pipeline is not configured. Please configure the pipeline before building the server.");
             }
@@ -83,6 +96,16 @@ namespace TcpServer.Core.Builder
             if (this.tcpServerCore.Port == 0)
             {
                 throw new InvalidOperationException("Port is not configured. Please configure the port before building the server.");
+            }
+
+            if (this.tcpServerCore.Ip == null)
+            {
+                throw new InvalidOperationException("IP address is not configured. Please configure the IP address before building the server.");
+            }
+
+            if (this.tcpServerCore.OnClientConnectedMessageSend == null)
+            {
+                throw new InvalidOperationException("OnClientConnectedMessageSend is not configured. Please configure the OnClientConnectedMessageSend before building the server.");
             }
 
             var result = this.tcpServerCore;

@@ -8,6 +8,7 @@ using TcpServer.Core.Interfaces;
 using TcpServer.Core;
 using Chat.TcpServer.Core.Pipeline;
 using TcpServer.Core.Collections;
+using TcpServer.Core.Collections.Interfaces;
 
 namespace Chat.TcpServer.Core;
 
@@ -28,6 +29,8 @@ internal class TcpServerCore : ITcpServer
     internal TypeObjectContainer GlobalServices => this.globalServices;
 
     public Func<TcpRequestPipeline> TcpRequestPipelineFactory { get; internal set; } = default!;
+
+    public Func<IReadOnlyServices, byte[]> OnClientConnectedMessageSend { get; internal set; } = default!;
 
     public IPAddress Ip { get; internal set; } = default!;
 
@@ -52,8 +55,8 @@ internal class TcpServerCore : ITcpServer
     private readonly object proccessLocker = new();
     private int clientProccessCount = 0;
 
-    public void AddGlobalServiceOrConfig<T>(T obj)
-        where T : class
+    public void AddGlobalServiceOrConfig<T, TImplementation>(TImplementation obj)
+        where TImplementation : class, T
     {
         if (obj == null)
         {
@@ -77,7 +80,7 @@ internal class TcpServerCore : ITcpServer
                 this.Connections.Add(client);
             }
 
-            Task.Run(async () => { await HandleTcpClient(client); });
+            HandleTcpClient(client);
         }
     }
 
@@ -97,6 +100,8 @@ internal class TcpServerCore : ITcpServer
         {
             ++this.clientProccessCount;
         }
+
+        var pipeline = this.TcpRequestPipelineFactory();
 
         try
         {

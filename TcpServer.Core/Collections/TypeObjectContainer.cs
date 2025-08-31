@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TcpServer.Core.Collections.Interfaces;
 using TcpServer.Core.Interfaces;
 
 namespace TcpServer.Core.Collections
 {
-    internal class TypeObjectContainer
+    internal class TypeObjectContainer : IReadOnlyServices
     {
         private readonly Dictionary<Type, object> typeObjectDictionary;
 
@@ -41,6 +42,15 @@ namespace TcpServer.Core.Collections
             }
 
             typeObjectDictionary[value.GetType()] = value;
+        }
+        public void Set<T, TImplementation>(TImplementation value)
+        {
+            if ((object)value! == this)
+            {
+                throw new ArgumentException("Cannot set the TypeObjectContainer itself as a value.", nameof(value));
+            }
+
+            typeObjectDictionary[typeof(T)] = value!;
         }
     }
 }
