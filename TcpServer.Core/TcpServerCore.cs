@@ -28,22 +28,13 @@ internal class TcpServerCore : ITcpServer
 
     internal TypeObjectContainer GlobalServices => this.globalServices;
 
-    public Func<TcpRequestPipeline> TcpRequestPipelineFactory { get; internal set; } = default!;
+    public Func<TcpServerCore, TcpRequestPipeline> TcpRequestPipelineFactory { get; internal set; } = default!;
 
     public Func<IReadOnlyServices, byte[]> OnClientConnectedMessageSend { get; internal set; } = default!;
 
     public IPAddress Ip { get; internal set; } = default!;
 
     public int Port { get; internal set; }
-
-
-    private JsonSerializerOptions jsonSerializerOptions;
-
-    /// <summary>
-    /// Database message service.
-    /// </summary>
-    private IMessageService messageService;
-
     
     /// <summary>
     /// Sync locker used to allow only one thread to notify users, see <see cref="NotifyAllAsync"/>.
@@ -55,22 +46,22 @@ internal class TcpServerCore : ITcpServer
     private readonly object proccessLocker = new();
     private int clientProccessCount = 0;
 
-    public void AddGlobalServiceOrConfig<T, TImplementation>(TImplementation obj)
-        where TImplementation : class, T
+    public void AddGlobalServiceOrConfig<TComponent>(TComponent obj)
+    where TComponent : class
     {
         if (obj == null)
         {
             throw new ArgumentNullException(nameof(obj), "Global service or config cannot be null.");
         }
 
-        this.globalServices.Set(obj);
+        this.globalServices.SetGeneric(obj);
     }
 
     public async Task RunAsync()
     {
         using TcpListener server = new TcpListener(this.Ip, this.Port);
         server.Start();
-        ClientCountDisplay();
+        _ = Task.Run(() => ClientCountDisplay());
         while (true)
         {
             var client = await server.AcceptTcpClientAsync();
@@ -80,7 +71,7 @@ internal class TcpServerCore : ITcpServer
                 this.Connections.Add(client);
             }
 
-            HandleTcpClient(client);
+            _ = Task.Run(() => HandleTcpClient(client));
         }
     }
 
@@ -101,41 +92,16 @@ internal class TcpServerCore : ITcpServer
             ++this.clientProccessCount;
         }
 
-        var pipeline = this.TcpRequestPipelineFactory();
+        var pipeline = this.TcpRequestPipelineFactory(this);
 
         try
         {
-            var idMessage = MessageFactory.CreateIdentificationMessage();
-            await stream.WriteAsync(idMessage.ToBytes(this.jsonSerializerOptions));
+            await stream.WriteAsync(OnClientConnectedMessageSend(this.globalServices));
 
             while (true)
             {
-                byte[] data = new byte[8192];
-
-                int bytesRead = await stream.ReadAsync(data, 0, data.Length);
-                if (bytesRead == 0)
-                {
-                    throw new InvalidOperationException("Connection lost");
-                }
-
-                Console.WriteLine($"Data has been received at {DateTime.Now}. Data length: {bytesRead} bytes");
-
-                try
-                {
-                    var message = data[..bytesRead].MessageFromJsonBytes<BasicMessage<string>>(this.jsonSerializerOptions);
-                    message.TimeUtc = DateTime.UtcNow;
-                    var id = await this.messageService.AddMessageAsync(message);
-                    message.Id = id;
-                    NotifyAllAsync(message);
-                }
-                catch (Exception e)
-                {
-                    await this.SendMessageAsync(client,
-                        MessageFactory.CreateErrorMessage(
-                            "Failed to read and save message! Make sure it's in correct format"));
-                }
-
-                await Task.Delay(50);
+                await pipeline.ExecuteAsync(client);
+                await Task.Delay(1);
             }
         }
         catch (Exception ex)
@@ -147,7 +113,7 @@ internal class TcpServerCore : ITcpServer
         {
             lock (locker)
             {
-                client.Dispose();
+                client.Close();
                 this.Connections.Remove(client);
             }
         }
@@ -155,66 +121,6 @@ internal class TcpServerCore : ITcpServer
         lock (proccessLocker)
         {
             --this.clientProccessCount;
-        }
-    }
-
-    /// <summary>
-    /// Sends a message to the specified tcp client.
-    /// </summary>
-    /// <remarks>
-    /// See exceptions thrown by methods: <see cref="TcpClient.GetStream"/>, <see cref="NetworkStream.WriteAsync(ReadOnlyMemory{byte},CancellationToken)"/>
-    /// </remarks>
-    /// <param name="client">Tcp client connection.</param>
-    /// <param name="message">Message to send.</param>
-    /// <typeparam name="TMessageData">Message data type.</typeparam>
-    public async Task SendMessageAsync<TMessage>(TcpClient client, TMessage message)
-        where TMessage : Message.Message, new()
-    {
-        var stream = client.GetStream();
-        await stream.WriteAsync(message.ToBytes(this.jsonSerializerOptions));
-    }
-
-    /// <summary>
-    /// Sends a message to all connected tcp clients. If a message cannot be sent through a connection, a connection is closed and removed.
-    /// </summary>
-    /// <param name="message">Message with string data to send <see cref="Message{T}"/>.</param>
-    public async Task NotifyAllAsync<TMessage>(TMessage message)
-        where TMessage : Message.Message, new()
-    {
-        List<Task> tasks = [];
-        List<TcpClient> toRemove = new List<TcpClient>();
-        lock (locker)
-        {
-            Console.WriteLine($"Notifying start---");
-            Console.WriteLine("Connections count - " + this.Connections.Count + ".");
-            foreach (var connection in this.Connections)
-            {
-                Console.WriteLine(connection.Connected);
-                Console.WriteLine(connection.Client.RemoteEndPoint);
-                tasks.Add(Task.Factory.StartNew(async () =>
-                {
-                    try
-                    {
-                        await this.SendMessageAsync(connection, message);
-                    }
-                    catch (Exception ex)
-                    {
-                        toRemove.Add(connection);
-                    }
-                }));
-            }
-
-            Console.WriteLine($"Notifying end---");
-        }
-
-        await Task.WhenAll(tasks);
-        lock (locker)
-        {
-            foreach (var connection in toRemove)
-            {
-                connection.Dispose();
-                Connections.Remove(connection);
-            }
         }
     }
 }
