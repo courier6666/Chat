@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatServer", "ChatServer\ChatServer.csproj", "{FD8C391A-83A3-4E7E-BBF9-3B566E6C5E51}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServer.Core", "TcpServer.Core\TcpServer.Core.csproj", "{54B727D3-852D-4A3D-B87F-0C2E3DF96EEF}"
@@ -11,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseAccess.SQLite", "DatabaseAccess.SQLite\DatabaseAccess.SQLite.csproj", "{FE7D5D80-57CF-45D0-A289-33874E9EED40}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatHttpServer", "ChatHttpServer\ChatHttpServer.csproj", "{131AC152-4F99-46A2-81F8-1C38FD2493FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServer.Core.MessageComponents", "TcpServer.Core.MessageComponents\TcpServer.Core.MessageComponents.csproj", "{D805E9DD-1556-4D1C-9889-783E9AFB89EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,5 +47,15 @@ Global
 		{131AC152-4F99-46A2-81F8-1C38FD2493FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{131AC152-4F99-46A2-81F8-1C38FD2493FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{131AC152-4F99-46A2-81F8-1C38FD2493FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D805E9DD-1556-4D1C-9889-783E9AFB89EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D805E9DD-1556-4D1C-9889-783E9AFB89EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D805E9DD-1556-4D1C-9889-783E9AFB89EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D805E9DD-1556-4D1C-9889-783E9AFB89EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2579356A-03BA-4C1A-97B0-189A0356DE94}
 	EndGlobalSection
 EndGlobal

@@ -10,6 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\ChatHttpServer\ChatHttpServer.csproj" />
       <ProjectReference Include="..\DatabaseAccess.SQLite\DatabaseAccess.SQLite.csproj" />
+      <ProjectReference Include="..\TcpServer.Core.MessageComponents\TcpServer.Core.MessageComponents.csproj" />
       <ProjectReference Include="..\TcpServer.Core\TcpServer.Core.csproj" />
     </ItemGroup>
 

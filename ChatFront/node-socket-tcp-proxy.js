@@ -27,7 +27,7 @@ webSocketServer.on('connection', (ws) => {
 
   tcpSocket.on('close', () => {
     console.log();
-    ws.close('Tcp socket.');
+    ws.close();
   })
 
   tcpSocket.on('error', () => {
