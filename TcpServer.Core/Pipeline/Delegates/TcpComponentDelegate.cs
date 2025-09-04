@@ -2,4 +2,4 @@ using System.Net.Sockets;
 
 namespace Chat.TcpServer.Core.Pipeline.Delegates;
 
-public delegate void TcpComponentDelegate(TcpClient client);
+public delegate Task TcpComponentDelegate(TcpClient client);
