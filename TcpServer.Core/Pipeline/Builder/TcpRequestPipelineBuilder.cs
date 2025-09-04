@@ -11,7 +11,7 @@ namespace TcpServer.Core.Pipeline.Builder
 {
     internal class TcpRequestPipelineBuilder : ITcpRequestPipelineBuilder
     {
-        private List<TcpPipeComponent> components = new();
+        private readonly List<TcpPipeComponent> components = new();
 
         private ConnectionList connections = null!;
 
@@ -58,6 +58,7 @@ namespace TcpServer.Core.Pipeline.Builder
                 throw new ArgumentNullException(nameof(typeObjectContainer), "Global services collection cannot be null.");
             }
 
+            this.globalServices = typeObjectContainer;
 
             return this;
         }
@@ -86,7 +87,7 @@ namespace TcpServer.Core.Pipeline.Builder
                 throw new InvalidOperationException("Global services collection must be set before building the pipeline.");
             }
 
-            var pipeline = TcpRequestPipeline.Create(this.components, this.connections, this.globalServices);
+            var pipeline = TcpRequestPipeline.Create(this.components.ToList(), this.connections, this.globalServices);
             pipeline.ConstructPipeline();
             return pipeline;
         }
