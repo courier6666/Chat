@@ -47,7 +47,7 @@ internal class TcpServerCore : ITcpServer
     private int clientProccessCount = 0;
 
     public void AddGlobalServiceOrConfig<TComponent>(TComponent obj)
-    where TComponent : class
+        where TComponent : class
     {
         if (obj == null)
         {
@@ -96,7 +96,8 @@ internal class TcpServerCore : ITcpServer
 
         try
         {
-            await stream.WriteAsync(OnClientConnectedMessageSend(this.globalServices));
+            if (this.OnClientConnectedMessageSend != null)
+                await stream.WriteAsync(OnClientConnectedMessageSend(this.globalServices));
 
             while (true)
             {
