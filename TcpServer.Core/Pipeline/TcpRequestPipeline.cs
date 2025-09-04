@@ -46,7 +46,7 @@ internal class TcpRequestPipeline
 
         var currentComponent = currentComponents.Dequeue();
         var nextComponent = BuildNextComponent(currentComponents);
-        return (client) =>
+        return async (client) =>
         {
             var methodParams = currentComponent.Method.
                 GetParameters().
@@ -56,7 +56,7 @@ internal class TcpRequestPipeline
             
             if(methodResult is Task task)
             {
-                task.GetAwaiter().GetResult();
+                await task.ConfigureAwait(false);
             }
         };
     }
@@ -123,15 +123,13 @@ internal class TcpRequestPipeline
         throw new InvalidOperationException($"Cannot resolve parameter of type {parameterType.FullName} in pipeline component method {parameter.Member.Name}.");
     }
 
-    public Task ExecuteAsync(TcpClient client)
+    public async Task ExecuteAsync(TcpClient client)
     {
         if (!IsConstructed)
             this.ConstructPipeline();
 
-        this.head!(client);
+        await this.head!(client);
 
         this.pipelineBag.Clear();
-
-        return Task.CompletedTask;
     }
 }
