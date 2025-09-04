@@ -35,16 +35,16 @@ namespace TcpServer.Core.Builder
             this.tcpServerCore.Ip = address;
             return this;
         }
-
-        public TcpServerBuilder AddGlobalServiceOrConfig<T, TImplementation>(TImplementation obj)
-            where TImplementation : class, T
+        
+        public TcpServerBuilder AddGlobalServiceOrConfig<TComponent>(TComponent obj)
+            where TComponent : class
         {
             if (obj == null)
             {
                 throw new ArgumentNullException(nameof(obj), "Global service or config cannot be null.");
             }
 
-            this.tcpServerCore.AddGlobalServiceOrConfig<T, TImplementation>(obj);
+            this.tcpServerCore.AddGlobalServiceOrConfig(obj);
             return this;
         }
 
@@ -56,11 +56,12 @@ namespace TcpServer.Core.Builder
                 throw new ArgumentNullException(nameof(build), "Build action cannot be null.");
             }
 
-            this.tcpServerCore.TcpRequestPipelineFactory = () =>
+            this.tcpServerCore.TcpRequestPipelineFactory = (server) =>
             {
+                
                 var pipelineBuilder = TcpRequestPipelineBuilder.Create();
-                pipelineBuilder.SetConnectionsList(this.tcpServerCore.Connections).
-                    SetGlobalServicesCollection(this.tcpServerCore.GlobalServices);
+                pipelineBuilder.SetConnectionsList(server.Connections).
+                    SetGlobalServicesCollection(server.GlobalServices);
 
                 build(pipelineBuilder);
                 return pipelineBuilder.Build();
