@@ -43,7 +43,8 @@ namespace TcpServer.Core.Collections
 
             typeObjectDictionary[value.GetType()] = value;
         }
-        public void Set<T, TImplementation>(TImplementation value)
+
+        public void SetGeneric<T>(T value)
         {
             if ((object)value! == this)
             {
