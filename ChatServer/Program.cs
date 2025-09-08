@@ -56,4 +56,4 @@ var tcpServer = builder.Build();
 ChatHttpServer httpServer = new ChatHttpServer("http://localhost:7071/", JsonOptions.Instance);
 httpServer.AddEndpoints();
 
-Task.WaitAll([httpServer.StartAsync(), tcpServer.RunAsync()]);
+await Task.WhenAll(httpServer.StartAsync(), tcpServer.RunAsync());
