@@ -4,7 +4,7 @@ namespace Chat.TcpServer.Core.Pipeline;
 
 internal class TcpPipeComponent
 {
-    public object Component { get; set; } =  null!;
+    public Type ComponentType { get; set; } =  null!;
     
     public MethodInfo Method { get; set; } = null!;
 }

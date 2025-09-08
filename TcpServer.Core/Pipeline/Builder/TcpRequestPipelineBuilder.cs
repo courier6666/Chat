@@ -1,4 +1,5 @@
 ﻿using Chat.TcpServer.Core.Pipeline;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace TcpServer.Core.Pipeline.Builder
 
         private ConnectionList connections = null!;
 
-        private TypeObjectContainer globalServices = null!;
+        private IServiceScope serviceScope;
 
         private TcpRequestPipelineBuilder()
         {
@@ -27,15 +28,10 @@ namespace TcpServer.Core.Pipeline.Builder
             return new TcpRequestPipelineBuilder();
         }
 
-        public ITcpRequestPipelineBuilder AddComponent<T>(T component)
-            where T : class
+        public ITcpRequestPipelineBuilder AddComponent<TComponent>()
+            where TComponent : class
         {
-            if (component == null)
-            {
-                throw new ArgumentNullException(nameof(component), "Component cannot be null.");
-            }
-
-            var pipeComponent = component.GetComponentFromClass();
+            var pipeComponent = typeof(TComponent).GetComponentFromClass();
             this.components.Add(pipeComponent);
 
             return this;
@@ -51,14 +47,14 @@ namespace TcpServer.Core.Pipeline.Builder
             return this;
         }
 
-        internal TcpRequestPipelineBuilder SetGlobalServicesCollection(TypeObjectContainer typeObjectContainer)
+        internal TcpRequestPipelineBuilder SetServiceScope(IServiceScope serviceScope)
         {
-            if (typeObjectContainer == null)
+            if (serviceScope == null)
             {
-                throw new ArgumentNullException(nameof(typeObjectContainer), "Global services collection cannot be null.");
+                throw new ArgumentNullException(nameof(serviceScope), "Service Scope cannot be null.");
             }
 
-            this.globalServices = typeObjectContainer;
+            this.serviceScope = serviceScope;
 
             return this;
         }
@@ -67,7 +63,7 @@ namespace TcpServer.Core.Pipeline.Builder
         {
             this.components.Clear();
             this.connections = null!;
-            this.globalServices = null!;
+            this.serviceScope = null!;
         }
 
         internal TcpRequestPipeline Build()
@@ -82,12 +78,12 @@ namespace TcpServer.Core.Pipeline.Builder
                 throw new InvalidOperationException("At least one component must be added to the pipeline.");
             }
 
-            if (this.globalServices == null)
+            if (this.serviceScope == null)
             {
-                throw new InvalidOperationException("Global services collection must be set before building the pipeline.");
+                throw new InvalidOperationException("Service scope must be set before building the pipeline.");
             }
 
-            var pipeline = TcpRequestPipeline.Create(this.components.ToList(), this.connections, this.globalServices);
+            var pipeline = TcpRequestPipeline.Create(this.components.ToList(), this.connections, this.serviceScope);
             pipeline.ConstructPipeline();
             return pipeline;
         }

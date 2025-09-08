@@ -9,7 +9,7 @@ namespace TcpServer.Core.Pipeline.Interfaces
 {
     public interface ITcpRequestPipelineBuilder
     {
-        public ITcpRequestPipelineBuilder AddComponent<T>(T component)
+        public ITcpRequestPipelineBuilder AddComponent<T>()
             where T : class;
     }
 }

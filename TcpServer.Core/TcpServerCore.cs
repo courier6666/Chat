@@ -9,6 +9,7 @@ using TcpServer.Core;
 using Chat.TcpServer.Core.Pipeline;
 using TcpServer.Core.Collections;
 using TcpServer.Core.Collections.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Chat.TcpServer.Core;
 
@@ -22,11 +23,24 @@ internal class TcpServerCore : ITcpServer
     /// </summary>
     private readonly ConnectionList connections = new();
 
+    private IServiceProvider serviceProvider = null!;
+
     internal ConnectionList Connections => this.connections;
 
     private readonly TypeObjectContainer globalServices = new();
 
     internal TypeObjectContainer GlobalServices => this.globalServices;
+
+    internal IServiceCollection Services { get; } = new ServiceCollection();
+
+    internal IServiceProvider ServiceProvider
+    {
+        get
+        {
+            this.serviceProvider ??= Services.BuildServiceProvider();
+            return this.serviceProvider;
+        }
+    }
 
     public Func<TcpServerCore, TcpRequestPipeline> TcpRequestPipelineFactory { get; internal set; } = default!;
 
@@ -49,6 +63,7 @@ internal class TcpServerCore : ITcpServer
     public void AddGlobalServiceOrConfig<TComponent>(TComponent obj)
         where TComponent : class
     {
+ 
         if (obj == null)
         {
             throw new ArgumentNullException(nameof(obj), "Global service or config cannot be null.");

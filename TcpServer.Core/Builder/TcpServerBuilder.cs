@@ -1,4 +1,5 @@
 ﻿using Chat.TcpServer.Core;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,19 +36,6 @@ namespace TcpServer.Core.Builder
             this.tcpServerCore.Ip = address;
             return this;
         }
-        
-        public TcpServerBuilder AddGlobalServiceOrConfig<TComponent>(TComponent obj)
-            where TComponent : class
-        {
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj), "Global service or config cannot be null.");
-            }
-
-            this.tcpServerCore.AddGlobalServiceOrConfig(obj);
-            return this;
-        }
-
 
         public TcpServerBuilder Pipeline(Action<ITcpRequestPipelineBuilder> build)
         {
@@ -58,10 +46,9 @@ namespace TcpServer.Core.Builder
 
             this.tcpServerCore.TcpRequestPipelineFactory = (server) =>
             {
-                
                 var pipelineBuilder = TcpRequestPipelineBuilder.Create();
                 pipelineBuilder.SetConnectionsList(server.Connections).
-                    SetGlobalServicesCollection(server.GlobalServices);
+                    SetServiceScope(server.ServiceProvider.CreateScope());
 
                 build(pipelineBuilder);
                 return pipelineBuilder.Build();
@@ -80,6 +67,8 @@ namespace TcpServer.Core.Builder
             this.tcpServerCore.OnClientConnectedMessageSend = messageFactory;
             return this;
         }
+
+        public IServiceCollection Services => this.tcpServerCore.Services;
 
         public void Reset()
         {

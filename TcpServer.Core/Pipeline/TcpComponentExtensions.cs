@@ -43,10 +43,8 @@ namespace TcpServer.Core.Pipeline
             return true;
         }
 
-        public static TcpPipeComponent GetComponentFromClass<T>(this T obj)
-            where T : class
+        public static TcpPipeComponent GetComponentFromClass(this Type type)
         {
-            var type = typeof(T);
             var handleMethods = type.GetMethods().
                 Where(m => m.IsMethodCorrectForPipeComponent());
 
@@ -60,9 +58,16 @@ namespace TcpServer.Core.Pipeline
                 throw new InvalidOperationException($"Class {type.Name} contains more than one public method named 'Handle' or 'HandleAsync'.");
             }
 
+            var constructors = type.GetConstructors();
+
+            if (constructors.Count() > 1)
+            {
+                throw new InvalidOperationException($"Class {type.Name} contains more than one public constructor.");
+            }
+
             return new TcpPipeComponent
             {
-                Component = obj,
+                ComponentType = type,
                 Method = handleMethods.First()
             };
         }
