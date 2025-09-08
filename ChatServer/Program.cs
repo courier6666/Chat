@@ -13,6 +13,7 @@ using System.IO;
 using Chat.DatabaseAccess;
 using TcpServer.Core.Pipeline.Components;
 using TcpServer.Core.MessageComponents;
+using Microsoft.Extensions.DependencyInjection;
 
 using var conn = new SqliteConnection("Data Source=Chat.db");
 conn.Open();
@@ -32,22 +33,23 @@ DapperExtensions.DapperStartup();
 var builder = TcpServerBuilder.Create();
 builder.Port(7070)
     .IpAddress(IPAddress.Loopback)
-    .AddGlobalServiceOrConfig(JsonOptions.Instance)
-    .AddGlobalServiceOrConfig<IMessageService>(new SQLiteMessageService("Data Source=Chat.db"))
     .OnClientConnectedMessageSend((services) =>
     {
         var idMessage = MessageFactory.CreateIdentificationMessage();
-        var jsonSerializerOptions = services.Get<JsonSerializerOptions>();
+        var jsonSerializerOptions = services.GetService<JsonSerializerOptions>();
         return idMessage.ToBytes(jsonSerializerOptions);
     })
     .Pipeline(pipeline =>
     {
-        pipeline.AddComponent(new BytesReadFromStreamComponent())
-            .AddComponent(new ErrorCatchMessageComponent())
-            .AddComponent(new ParseChatMessageComponent())
-            .AddComponent(new AddChatMessageComponent())
-            .AddComponent(new NotifyAllChatComponent());
+        pipeline.AddComponent<BytesReadFromStreamComponent>()
+            .AddComponent<ErrorCatchMessageComponent>()
+            .AddComponent<ParseChatMessageComponent>()
+            .AddComponent<AddChatMessageComponent>()
+            .AddComponent<NotifyAllChatComponent>();
     });
+
+builder.Services.AddScoped<IMessageService, SQLiteMessageService>(_ => new SQLiteMessageService("Data Source=Chat.db"));
+builder.Services.AddSingleton(JsonOptions.Instance);
 
 var tcpServer = builder.Build();
 

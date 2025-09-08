@@ -44,7 +44,7 @@ internal class TcpServerCore : ITcpServer
 
     public Func<TcpServerCore, TcpRequestPipeline> TcpRequestPipelineFactory { get; internal set; } = default!;
 
-    public Func<IReadOnlyServices, byte[]> OnClientConnectedMessageSend { get; internal set; } = default!;
+    public Func<IServiceProvider, byte[]> OnClientConnectedMessageSend { get; internal set; } = default!;
 
     public IPAddress Ip { get; internal set; } = default!;
 
@@ -107,12 +107,12 @@ internal class TcpServerCore : ITcpServer
             ++this.clientProccessCount;
         }
 
-        var pipeline = this.TcpRequestPipelineFactory(this);
+        using var pipeline = this.TcpRequestPipelineFactory(this);
 
         try
         {
             if (this.OnClientConnectedMessageSend != null)
-                await stream.WriteAsync(OnClientConnectedMessageSend(this.globalServices));
+                await stream.WriteAsync(OnClientConnectedMessageSend(pipeline.serviceScope.ServiceProvider));
 
             while (true)
             {

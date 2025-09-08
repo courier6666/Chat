@@ -57,7 +57,7 @@ namespace TcpServer.Core.Builder
             return this;
         }
 
-        public TcpServerBuilder OnClientConnectedMessageSend(Func<IReadOnlyServices, byte[]> messageFactory)
+        public TcpServerBuilder OnClientConnectedMessageSend(Func<IServiceProvider, byte[]> messageFactory)
         {
             if (messageFactory == null)
             {

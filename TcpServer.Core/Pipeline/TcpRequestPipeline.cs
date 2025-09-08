@@ -15,7 +15,7 @@ internal class TcpRequestPipeline : IDisposable
 
     private readonly List<TcpPipeComponent> pipelineComponents;
     private readonly ConnectionList connections;
-    private readonly IServiceScope serviceScope;
+    internal readonly IServiceScope serviceScope;
     private readonly IPipelineBag pipelineBag = new PipelineTypeObjectContainer();
     private TcpComponentDelegate? head = null!;
 
