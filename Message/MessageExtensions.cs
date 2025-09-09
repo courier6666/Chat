@@ -13,7 +13,7 @@ public static class MessageExtensions
     /// <typeparam name="TMessage">Type message.</typeparam>
     /// <returns>An array of bytes representing a serialized message.</returns>
     public static byte[] ToBytes<TMessage>(this TMessage message, JsonSerializerOptions? options = null)
-        where TMessage : Message, new()
+        where TMessage : Message
     {
         var json = JsonSerializer.Serialize(message, options);
         Console.WriteLine(json);
@@ -28,7 +28,7 @@ public static class MessageExtensions
     /// <typeparam name="TMessage">Message type.</typeparam>
     /// <returns>Message of type <see cref="Message"/>. </returns>
     public static TMessage? MessageFromJsonBytes<TMessage>(this byte[] data, JsonSerializerOptions? options = null)
-        where TMessage : Message, new()
+        where TMessage : Message
     {
         var json = Encoding.UTF8.GetString(data);
         Console.WriteLine(json);

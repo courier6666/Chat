@@ -68,6 +68,17 @@ namespace TcpServer.Core.Builder
             return this;
         }
 
+        public TcpServerBuilder OnServerStart(Action<IServiceProvider> onServerStart)
+        {
+            if (onServerStart == null)
+            {
+                throw new ArgumentNullException(nameof(onServerStart), "On server start action cannot be null.");
+            }
+
+            this.tcpServerCore.OnServerStart = onServerStart;
+            return this;
+        }
+
         public IServiceCollection Services => this.tcpServerCore.Services;
 
         public void Reset()
@@ -96,6 +107,11 @@ namespace TcpServer.Core.Builder
             if (this.tcpServerCore.OnClientConnectedMessageSend == null)
             {
                 throw new InvalidOperationException("OnClientConnectedMessageSend is not configured. Please configure the OnClientConnectedMessageSend before building the server.");
+            }
+
+            if (this.tcpServerCore.OnServerStart == null)
+            {
+                throw new InvalidOperationException("OnServerStart is not configured. Please configure the OnServerStart before building the server.");
             }
 
             var result = this.tcpServerCore;

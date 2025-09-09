@@ -27,10 +27,6 @@ internal class TcpServerCore : ITcpServer
 
     internal ConnectionList Connections => this.connections;
 
-    private readonly TypeObjectContainer globalServices = new();
-
-    internal TypeObjectContainer GlobalServices => this.globalServices;
-
     internal IServiceCollection Services { get; } = new ServiceCollection();
 
     internal IServiceProvider ServiceProvider
@@ -46,6 +42,8 @@ internal class TcpServerCore : ITcpServer
 
     public Func<IServiceProvider, byte[]> OnClientConnectedMessageSend { get; internal set; } = default!;
 
+    public Action<IServiceProvider> OnServerStart { get; internal set; } = default!;
+
     public IPAddress Ip { get; internal set; } = default!;
 
     public int Port { get; internal set; }
@@ -60,22 +58,17 @@ internal class TcpServerCore : ITcpServer
     private readonly object proccessLocker = new();
     private int clientProccessCount = 0;
 
-    public void AddGlobalServiceOrConfig<TComponent>(TComponent obj)
-        where TComponent : class
+    public TcpServerCore()
     {
- 
-        if (obj == null)
-        {
-            throw new ArgumentNullException(nameof(obj), "Global service or config cannot be null.");
-        }
-
-        this.globalServices.SetGeneric(obj);
+        this.Services.AddSingleton<ConnectionList>(this.connections);
     }
 
     public async Task RunAsync()
     {
         using TcpListener server = new TcpListener(this.Ip, this.Port);
         server.Start();
+        OnServerStart(this.ServiceProvider);
+
         _ = Task.Run(() => ClientCountDisplay());
         while (true)
         {

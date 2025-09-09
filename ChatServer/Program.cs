@@ -14,6 +14,8 @@ using Chat.DatabaseAccess;
 using TcpServer.Core.Pipeline.Components;
 using TcpServer.Core.MessageComponents;
 using Microsoft.Extensions.DependencyInjection;
+using TcpServer.Core.MessageComponents.Services.Interfaces;
+using TcpServer.Core.MessageComponents.Services;
 
 using var conn = new SqliteConnection("Data Source=Chat.db");
 conn.Open();
@@ -39,17 +41,23 @@ builder.Port(7070)
         var jsonSerializerOptions = services.GetService<JsonSerializerOptions>();
         return idMessage.ToBytes(jsonSerializerOptions);
     })
+    .OnServerStart((services) =>
+    {
+        var broadcastService = services.GetService<IBroadcastService>()!;
+        broadcastService.Start();
+    })
     .Pipeline(pipeline =>
     {
         pipeline.AddComponent<BytesReadFromStreamComponent>()
             .AddComponent<ErrorCatchMessageComponent>()
             .AddComponent<ParseChatMessageComponent>()
             .AddComponent<AddChatMessageComponent>()
-            .AddComponent<NotifyAllChatComponent>();
+            .AddComponent<NotifyAllChatBroadcastComponent>();
     });
 
 builder.Services.AddScoped<IMessageService, SQLiteMessageService>(_ => new SQLiteMessageService("Data Source=Chat.db"));
 builder.Services.AddSingleton(JsonOptions.Instance);
+builder.Services.AddSingleton<IBroadcastService, BroadcastService>();
 
 var tcpServer = builder.Build();
 

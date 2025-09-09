@@ -22,7 +22,7 @@ namespace TcpServer.Core.MessageComponents
         /// <param name="message">Message to send.</param>
         /// <typeparam name="TMessageData">Message data type.</typeparam>
         public static async Task SendMessageAsync<TMessage>(this TcpClient client, TMessage message, JsonSerializerOptions jsonOptions)
-            where TMessage : Message, new()
+            where TMessage : Message
         {
             var stream = client.GetStream();
             await stream.WriteAsync(message.ToBytes(jsonOptions));
